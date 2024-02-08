@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Installer",
+            "request": "launch",
+            "mainClass": "kyazuki.Main",
+            "projectName": "minecraft-mod-installer"
+        }
+    ]
+}

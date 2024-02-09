@@ -32,6 +32,9 @@ public class Profiles {
         /** JVM引数 */
         @JsonInclude(Include.NON_NULL)
         public String javaArgs;
+        /** Javaパス */
+        @JsonInclude(Include.NON_NULL)
+        public String javaDir;
         /** 最終起動日時 */
         public Instant lastUsed;
         /** バージョンID */
@@ -41,6 +44,9 @@ public class Profiles {
         /** 解像度設定 */
         @JsonInclude(Include.NON_NULL)
         public Resolution resolution;
+        /** JREバージョンをチェックするか？ */
+        @JsonInclude(Include.NON_NULL)
+        public boolean skipJreVersionCheck;
         /** タイプ */
         public String type;
     }

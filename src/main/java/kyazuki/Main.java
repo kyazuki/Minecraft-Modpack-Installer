@@ -27,7 +27,7 @@ public class Main {
     public static void main(String[] args) {
         // ロガーを準備する
         LogManager.getLogManager().reset();
-        Logger logger = Logger.getLogger("minecraft-mod-installer");
+        Logger logger = Logger.getLogger("minecraft-modpack-installer");
         Handler handler = null;
         try {
             handler = new FileHandler("installer.log");

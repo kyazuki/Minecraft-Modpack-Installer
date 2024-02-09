@@ -1,0 +1,15 @@
+Profile:
+  name: Example Modpack
+  icon: Furnace
+  versionId: 1.20.1-forge-47.2.20
+  javaArgs: -Xms4G -Xmx8G -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M
+ModLoader:
+  name: Minecraft Forge
+  url: https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.2.20/forge-1.20.1-47.2.20-installer.jar
+CurseForgeMods:
+- name: Create
+  modId: 328085
+  fileId: 4835191
+- name: Just Enough Items
+  modId: 238222
+  fileId: 5074448

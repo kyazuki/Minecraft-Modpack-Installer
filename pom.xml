@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>kyazuki</groupId>
-    <artifactId>minecraft-mod-installer</artifactId>
+    <artifactId>minecraft-modpack-installer</artifactId>
     <version>1.0.0</version>
 
     <properties>
@@ -59,20 +59,6 @@
                                     <mainClass>kyazuki.Main</mainClass>
                                 </manifest>
                             </archive>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>assemble-all</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>minecraft-mod-installer</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>assembly.xml</descriptor>
-                            </descriptors>
                         </configuration>
                     </execution>
                 </executions>

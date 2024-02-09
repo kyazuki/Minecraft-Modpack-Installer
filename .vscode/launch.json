@@ -6,7 +6,8 @@
             "name": "Launch Installer",
             "request": "launch",
             "mainClass": "kyazuki.Main",
-            "projectName": "minecraft-mod-installer"
+            "projectName": "minecraft-modpack-installer",
+            "cwd": "${workspaceFolder}/sample"
         }
     ]
 }

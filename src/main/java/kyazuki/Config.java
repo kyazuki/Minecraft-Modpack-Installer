@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -31,21 +32,38 @@ public class Config {
      * ダウンロードファイルの設定を管理する抽象クラス
      */
     public static abstract class DownloadFile {
+        /** 名前 */
         protected String name;
+        /** ダウンロードURL */
         protected String url;
+        /** ファイル名 (キャッシュ用) */
+        @JsonIgnore
+        protected String filename = null;
 
         protected abstract Path getDirectory();
 
+        /**
+         * ファイル名を取得する
+         */
         protected String getFileName() throws IOException {
-            String[] urls = getRedirectedURL(url).split("/");
-            return URLDecoder.decode(urls[urls.length - 1], "UTF-8");
+            if (filename == null) {
+                String[] urls = getRedirectedURL(url).split("/");
+                filename = URLDecoder.decode(urls[urls.length - 1], "UTF-8");
+            }
+            return filename;
         }
 
-        public void download() throws IOException {
+        /**
+         * ダウンロードを行う
+         *
+         * @return ダウンロードしたらtrue、すでにダウンロード済みならfalse
+         * @throws IOException
+         */
+        public boolean download() throws IOException {
             Path directory = getDirectory();
             Path path = directory.resolve(getFileName());
             if (Files.exists(path)) {
-                return;
+                return false;
             }
             Files.createDirectories(directory);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -63,9 +81,17 @@ public class Config {
                 }
             }
             Files.copy(new ByteArrayInputStream(baos.toByteArray()), path, StandardCopyOption.REPLACE_EXISTING);
+            return true;
         }
 
-        public static String getRedirectedURL(String url) throws IOException {
+        /**
+         * リダイレクト先のURLを取得する
+         *
+         * @param url
+         * @return リダイレクト先URL
+         * @throws IOException
+         */
+        private static String getRedirectedURL(String url) throws IOException {
             HttpURLConnection con = null;
             try {
                 con = (HttpURLConnection) new URL(url).openConnection();

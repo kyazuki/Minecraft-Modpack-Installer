@@ -5,7 +5,7 @@
             "type": "java",
             "name": "Launch Installer",
             "request": "launch",
-            "mainClass": "kyazuki.Main",
+            "mainClass": "kyazuki/kyazuki.Main",
             "projectName": "minecraft-modpack-installer",
             "cwd": "${workspaceFolder}/sample"
         }

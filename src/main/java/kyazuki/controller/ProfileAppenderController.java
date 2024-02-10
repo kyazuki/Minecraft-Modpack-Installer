@@ -1,4 +1,4 @@
-package kyazuki;
+package kyazuki.controller;
 
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -22,7 +22,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.DialogEvent;
-import kyazuki.Profiles.Profile;
+import kyazuki.App;
+import kyazuki.dataclass.Config;
+import kyazuki.dataclass.Profiles;
+import kyazuki.dataclass.Profiles.Profile;
 
 public class ProfileAppenderController {
     @FXML

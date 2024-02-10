@@ -1,4 +1,4 @@
-package kyazuki;
+package kyazuki.dataclass;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatterBuilder;

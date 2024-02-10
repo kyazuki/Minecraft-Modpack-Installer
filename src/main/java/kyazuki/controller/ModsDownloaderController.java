@@ -1,4 +1,4 @@
-package kyazuki;
+package kyazuki.controller;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -11,7 +11,9 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import kyazuki.Config.CurseForgeMod;
+import kyazuki.App;
+import kyazuki.dataclass.Config;
+import kyazuki.dataclass.Config.CurseForgeMod;
 
 public class ModsDownloaderController {
     @FXML

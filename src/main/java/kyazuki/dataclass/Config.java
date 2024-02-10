@@ -1,4 +1,4 @@
-package kyazuki;
+package kyazuki.dataclass;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +33,7 @@ public class Config {
      */
     public static abstract class DownloadFile {
         /** 名前 */
-        protected String name;
+        public String name;
         /** ダウンロードURL */
         protected String url;
         /** ファイル名 (キャッシュ用) */

@@ -9,7 +9,7 @@
 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
     minWidth="-Infinity" prefHeight="300.0" prefWidth="450.0"
     xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="kyazuki.ConfigLoaderController">
+    fx:controller="kyazuki.controller.ConfigLoaderController">
     <children>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
             <children>

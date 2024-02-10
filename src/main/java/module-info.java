@@ -10,6 +10,8 @@ module kyazuki {
     requires javafx.fxml;
 
     opens kyazuki to javafx.fxml;
+    opens kyazuki.controller to javafx.fxml;
 
     exports kyazuki;
+    exports kyazuki.dataclass;
 }

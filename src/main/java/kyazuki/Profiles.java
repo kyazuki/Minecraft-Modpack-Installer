@@ -16,7 +16,9 @@ public class Profiles {
      * 解像度設定
      */
     public static class Resolution {
+        /** 高さ */
         public int height;
+        /** 幅 */
         public int width;
     }
 

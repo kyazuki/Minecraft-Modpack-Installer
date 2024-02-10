@@ -45,7 +45,7 @@ public class Config {
         /**
          * ファイル名を取得する
          */
-        protected String getFileName() throws IOException {
+        public String getFileName() throws IOException {
             if (filename == null) {
                 String[] urls = getRedirectedURL(url).split("/");
                 filename = URLDecoder.decode(urls[urls.length - 1], "UTF-8");
@@ -118,10 +118,15 @@ public class Config {
      * ModLoaderのダウンロード設定を管理するクラス
      */
     public static class ModLoader extends DownloadFile {
+        /** インストール完了後に自動で実行するか */
+        public boolean autoOpen;
+
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        public ModLoader(@JsonProperty("name") String name, @JsonProperty("url") String url) {
+        public ModLoader(@JsonProperty("name") String name, @JsonProperty("url") String url,
+                @JsonProperty("autoOpen") boolean autoOpen) {
             this.name = name;
             this.url = url;
+            this.autoOpen = autoOpen;
         }
 
         @Override

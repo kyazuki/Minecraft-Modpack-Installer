@@ -120,13 +120,25 @@ public class ProfileAppenderController {
         service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
+                Logger logger = App.getLogger();
+                Config config = App.getConfig();
+                boolean isOpenModLoader = config.modLoader.autoOpen;
                 Alert alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("完了");
                 alert.setHeaderText(null);
-                alert.setContentText("インストールが完了しました。");
+                alert.setContentText(
+                        (!isOpenModLoader) ? "インストールが完了しました。" : "インストールが完了しました。\nModLoaderのインストーラーが起動します。");
                 alert.setOnCloseRequest(new EventHandler<DialogEvent>() {
                     @Override
                     public void handle(DialogEvent event) {
+                        if (isOpenModLoader) {
+                            try {
+                                ProcessBuilder pb = new ProcessBuilder("java", "-jar", config.modLoader.getFileName());
+                                pb.start();
+                            } catch (IOException e) {
+                                logger.log(Level.WARNING, "Failed to start ModLoader Installer.", e);
+                            }
+                        }
                         App.finish();
                     }
                 });

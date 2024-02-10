@@ -6,6 +6,7 @@ Profile:
 ModLoader:
   name: Minecraft Forge
   url: https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.2.20/forge-1.20.1-47.2.20-installer.jar
+  autoOpen: true
 CurseForgeMods:
 - name: Create
   modId: 328085

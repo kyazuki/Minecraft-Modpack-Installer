@@ -188,7 +188,7 @@ public class Config {
                 @JsonProperty("directory") String directory, @JsonProperty("filename") String filename) {
             this.name = name;
             this.url = url;
-            this.directory = Path.of(directory);
+            this.directory = Path.of((directory != null) ? directory : ".");
             this.filename = filename;
         }
 

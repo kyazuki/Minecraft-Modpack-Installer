@@ -122,7 +122,7 @@ public class ProfileAppenderController {
             public void handle(WorkerStateEvent event) {
                 Logger logger = App.getLogger();
                 Config config = App.getConfig();
-                boolean isOpenModLoader = config.modLoader.autoOpen;
+                boolean isOpenModLoader = config.modLoader != null && config.modLoader.autoOpen;
                 Alert alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("完了");
                 alert.setHeaderText(null);

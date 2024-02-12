@@ -13,11 +13,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import kyazuki.App;
 import kyazuki.dataclass.Config;
-import kyazuki.dataclass.Config.CurseForgeMod;
+import kyazuki.dataclass.Config.Resource;
 
-public class ModsDownloaderController {
+public class ResourcesDownloaderController {
     @FXML
-    private Label modNameLabel;
+    private Label resourceNameLabel;
     @FXML
     private ProgressBar progressBar;
 
@@ -31,21 +31,21 @@ public class ModsDownloaderController {
                     protected Void call() throws Exception {
                         Logger logger = App.getLogger();
                         Config config = App.getConfig();
-                        if (config.curseForgeMods != null) {
-                            // Mod群をダウンロードする
-                            logger.info("Start downloading mods...");
-                            for (int i = 0; i < config.curseForgeMods.length; i++) {
-                                CurseForgeMod mod = config.curseForgeMods[i];
-                                updateMessage(mod.name);
+                        if (config.resources != null) {
+                            // リソース群をダウンロードする
+                            logger.info("Start downloading resource...");
+                            for (int i = 0; i < config.resources.length; i++) {
+                                Resource resource = config.resources[i];
+                                updateMessage(resource.name);
                                 try {
-                                    if (mod.download()) {
-                                        logger.info("\tDownloaded: " + mod.name);
+                                    if (resource.download()) {
+                                        logger.info("\tDownloaded: " + resource.name);
                                     } else {
-                                        logger.info("\tSkipping download: " + mod.name);
+                                        logger.info("\tSkipping download: " + resource.name);
                                     }
-                                    updateProgress(i + 1, config.curseForgeMods.length);
+                                    updateProgress(i + 1, config.resources.length);
                                 } catch (IOException e) {
-                                    logger.log(Level.SEVERE, "Failed to download mod: " + mod.name, e);
+                                    logger.log(Level.SEVERE, "Failed to download resource: " + resource.name, e);
                                     throw e;
                                 }
                             }
@@ -55,15 +55,15 @@ public class ModsDownloaderController {
                 };
             }
         };
-        modNameLabel.textProperty().bind(service.messageProperty());
+        resourceNameLabel.textProperty().bind(service.messageProperty());
         progressBar.progressProperty().bind(service.progressProperty());
         service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
                 try {
-                    App.setRoot("resourcesDownloader");
+                    App.setRoot("profileAppender");
                 } catch (IOException e) {
-                    App.getLogger().log(Level.SEVERE, "Failed to transit resourcesDownloader view.",
+                    App.getLogger().log(Level.SEVERE, "Failed to transit profileAppender view.",
                             e);
                     App.showAlertAndExit("ビュー遷移に失敗しました。");
                 }
@@ -72,7 +72,7 @@ public class ModsDownloaderController {
         service.setOnFailed(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                App.showAlertAndExit("Modのダウンロードに失敗しました。");
+                App.showAlertAndExit("リソースのダウンロードに失敗しました。");
             }
         });
         service.start();

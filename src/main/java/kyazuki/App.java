@@ -110,7 +110,7 @@ public class App extends Application {
         Logger l = Logger.getLogger("minecraft-modpack-installer");
         Handler handler = null;
         try {
-            handler = new FileHandler("installer.log");
+            handler = new FileHandler("minecraft-modpack-installer.log");
             handler.setEncoding("UTF-8");
         } catch (SecurityException | IOException e) {
             e.printStackTrace();
@@ -138,6 +138,7 @@ public class App extends Application {
 
     public static void main(String[] args) {
         initializeLogger();
+        logger.info("Start Application. Version: 1.1.2");
         launch();
     }
 

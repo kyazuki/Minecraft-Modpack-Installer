@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import org.springframework.http.ContentDisposition;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,8 +49,7 @@ public class Config {
          */
         public String getFileName() throws IOException {
             if (filename == null) {
-                String[] urls = getRedirectedURL(url).split("/");
-                filename = URLDecoder.decode(urls[urls.length - 1], "UTF-8");
+                filename = fetchFileName(url);
             }
             return filename;
         }
@@ -85,27 +86,42 @@ public class Config {
         }
 
         /**
-         * リダイレクト先のURLを取得する
+         * 指定されたURLからダウンロードされるファイルのファイル名を取得する
          *
          * @param url
-         * @return リダイレクト先URL
+         * @return ファイル名
          * @throws IOException
          */
-        private static String getRedirectedURL(String url) throws IOException {
+        private static String fetchFileName(String url) throws IOException {
+            return fetchFileName(new URL(url));
+        }
+
+        /**
+         * 指定されたURLからダウンロードされるファイルのファイル名を取得する
+         *
+         * @param url
+         * @return ファイル名
+         * @throws IOException
+         */
+        private static String fetchFileName(URL url) throws IOException {
             HttpURLConnection con = null;
             try {
-                con = (HttpURLConnection) new URL(url).openConnection();
+                con = (HttpURLConnection) url.openConnection();
                 con.setInstanceFollowRedirects(false);
                 con.connect();
                 if (con.getResponseCode() >= HttpURLConnection.HTTP_MULT_CHOICE && con
                         .getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
-                    String redirectUrl = con.getHeaderField("Location");
-                    return getRedirectedURL(redirectUrl);
+                    URL redirectUrl = new URL(con.getHeaderField("Location"));
+                    return fetchFileName(redirectUrl);
                 }
                 if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     throw new IOException("Error response. code: " + con.getResponseCode());
                 }
-                return url;
+                if (con.getHeaderField("Content-Disposition") != null) {
+                    return ContentDisposition.parse(con.getHeaderField("Content-Disposition")).getFilename();
+                }
+                String[] urls = url.getFile().split("/");
+                return URLDecoder.decode(urls[urls.length - 1], "UTF-8");
             } finally {
                 if (con != null) {
                     con.disconnect();
@@ -152,13 +168,38 @@ public class Config {
         }
     }
 
+    /**
+     * 他リソースのダウンロード設定を管理するクラス
+     */
+    public static class Resource extends DownloadFile {
+        /** ダウンロード先ディレクトリ */
+        protected Path directory;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        public Resource(@JsonProperty("name") String name, @JsonProperty("url") String url,
+                @JsonProperty("directory") String directory, @JsonProperty("filename") String filename) {
+            this.name = name;
+            this.url = url;
+            this.directory = Path.of(directory);
+            this.filename = filename;
+        }
+
+        @Override
+        protected Path getDirectory() {
+            return directory;
+        }
+    }
+
     /** プロファイル設定 */
     @JsonProperty("Profile")
-    public Profile profile;
+    public Profile profile = null;
     /** ModLoaderのダウンロード設定 */
     @JsonProperty("ModLoader")
-    public ModLoader modLoader;
+    public ModLoader modLoader = null;
     /** 各Mod(CurseForge)のダウンロード設定 */
     @JsonProperty("CurseForgeMods")
-    public CurseForgeMod[] curseForgeMods;
+    public CurseForgeMod[] curseForgeMods = null;
+    /** 他リソースのダウンロード設定 */
+    @JsonProperty("Resources")
+    public Resource[] resources = null;
 }

@@ -23,16 +23,18 @@ public class ModLoaderDownloaderController {
                     protected Void call() throws Exception {
                         Logger logger = App.getLogger();
                         Config config = App.getConfig();
-                        // ModLoaderをダウンロードする
-                        try {
-                            if (config.modLoader.download()) {
-                                logger.info("ModLoader Downloaded.");
-                            } else {
-                                logger.info("Skipping download mod loader.");
+                        if (config.modLoader != null) {
+                            // ModLoaderをダウンロードする
+                            try {
+                                if (config.modLoader.download()) {
+                                    logger.info("ModLoader Downloaded.");
+                                } else {
+                                    logger.info("Skipping download mod loader.");
+                                }
+                            } catch (IOException e) {
+                                logger.log(Level.SEVERE, "Failed to download Mod Loader.", e);
+                                throw e;
                             }
-                        } catch (IOException e) {
-                            logger.log(Level.SEVERE, "Failed to download Mod Loader.", e);
-                            throw e;
                         }
                         return null;
                     }

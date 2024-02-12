@@ -11,8 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -55,7 +53,6 @@ public class ProfileAppenderController {
                             Profiles profiles = null;
                             try (FileInputStream fis = new FileInputStream(profilesPath.toFile())) {
                                 ObjectMapper json = new ObjectMapper();
-                                json.registerModule(new JavaTimeModule());
                                 profiles = json.readValue(fis, Profiles.class);
                             } catch (IOException e) {
                                 logger.log(Level.WARNING, "Failed to load profile file. Skip adding profile.", e);
@@ -77,11 +74,11 @@ public class ProfileAppenderController {
                             }
                             Instant now = Instant.now();
                             Profile newProfile = new Profile();
-                            newProfile.created = now;
+                            newProfile.created = now.toString();
                             newProfile.gameDir = Path.of(".").toAbsolutePath().getParent().toString();
                             newProfile.icon = config.profile.icon;
                             newProfile.javaArgs = config.profile.javaArgs;
-                            newProfile.lastUsed = now;
+                            newProfile.lastUsed = now.toString();
                             newProfile.lastVersionId = config.profile.versionId;
                             newProfile.name = config.profile.name;
                             newProfile.resolution = null;
@@ -100,11 +97,6 @@ public class ProfileAppenderController {
                             }
                             try (FileWriter fw = new FileWriter(profilesPath.toFile())) {
                                 ObjectMapper json = new ObjectMapper();
-                                JavaTimeModule module = new JavaTimeModule();
-                                module.addSerializer(Instant.class, new Profiles.CustomInstantSerializer());
-                                json.registerModule(module);
-                                json.enable(SerializationFeature.INDENT_OUTPUT);
-                                json.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
                                 fw.write(json.writeValueAsString(profiles));
                             } catch (IOException e) {
                                 logger.log(Level.WARNING, "Failed to save profile file. Skip adding profile.", e);

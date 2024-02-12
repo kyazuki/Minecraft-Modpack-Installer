@@ -1,12 +1,9 @@
 package kyazuki.dataclass;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 
 /**
  * Minecraftのプロファイル設定ファイルを管理するクラス
@@ -25,7 +22,7 @@ public class Profiles {
     /** プロファイル設定 */
     public static class Profile {
         /** プロファイル作成日時 */
-        public Instant created;
+        public String created;
         /** ゲームディレクトリ */
         @JsonInclude(Include.NON_NULL)
         public String gameDir;
@@ -38,7 +35,7 @@ public class Profiles {
         @JsonInclude(Include.NON_NULL)
         public String javaDir;
         /** 最終起動日時 */
-        public Instant lastUsed;
+        public String lastUsed;
         /** バージョンID */
         public String lastVersionId;
         /** プロファイル名 */
@@ -59,14 +56,4 @@ public class Profiles {
     public Map<String, Object> settings;
     /** バージョン */
     public int version;
-
-    /**
-     * InstantクラスをMinecraftのプロファイル設定ファイルの形式に変換するためのカスタムシリアライザ
-     */
-    public static class CustomInstantSerializer extends InstantSerializer {
-        public CustomInstantSerializer() {
-            super(InstantSerializer.INSTANCE, false, false,
-                    new DateTimeFormatterBuilder().appendInstant(3).toFormatter());
-        }
-    }
 }

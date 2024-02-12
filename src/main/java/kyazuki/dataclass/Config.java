@@ -13,7 +13,6 @@ import java.nio.file.StandardCopyOption;
 import org.springframework.http.ContentDisposition;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -38,8 +37,7 @@ public class Config {
         public String name;
         /** ダウンロードURL */
         protected String url;
-        /** ファイル名 (キャッシュ用) */
-        @JsonIgnore
+        /** ファイル名 */
         protected String filename = null;
 
         protected abstract Path getDirectory();
@@ -152,19 +150,29 @@ public class Config {
     }
 
     /**
-     * CurseForge上のModのダウンロード設定を管理するクラス
+     * Modのダウンロード設定を管理する抽象クラス
      */
-    public static class CurseForgeMod extends DownloadFile {
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        public CurseForgeMod(@JsonProperty("name") String name, @JsonProperty("modId") int modId,
-                @JsonProperty("fileId") int fileId) {
+    public static class Mod extends DownloadFile {
+        public Mod(@JsonProperty("name") String name, @JsonProperty("url") String url,
+                @JsonProperty("filename") String filename) {
             this.name = name;
-            this.url = String.format("https://www.curseforge.com/api/v1/mods/%d/files/%d/download", modId, fileId);
+            this.url = url;
+            this.filename = filename;
         }
 
         @Override
         protected Path getDirectory() {
             return Path.of("mods");
+        }
+    }
+
+    /**
+     * CurseForge上のModのダウンロード設定を管理するクラス
+     */
+    public static class CurseForgeMod extends Mod {
+        public CurseForgeMod(@JsonProperty("name") String name, @JsonProperty("projectId") int projectId,
+                @JsonProperty("fileId") int fileId) {
+            super(name, getCurseForgeFileUrl(projectId, fileId), null);
         }
     }
 
@@ -190,6 +198,28 @@ public class Config {
         }
     }
 
+    /**
+     * CurseForge上リソースのダウンロード設定を管理するクラス
+     */
+    public static class CurseForgeResource extends Resource {
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        public CurseForgeResource(@JsonProperty("name") String name, @JsonProperty("projectId") int projectId,
+                @JsonProperty("fileId") int fileId,
+                @JsonProperty("directory") String directory) {
+            super(name, getCurseForgeFileUrl(projectId, fileId), directory, null);
+        }
+    }
+
+    /**
+     * CurseForge上ファイルのダウンロードURLを取得する
+     * 
+     * @param projectId プロジェクトID
+     * @param fileId    ファイルID
+     */
+    public static String getCurseForgeFileUrl(int projectId, int fileId) {
+        return String.format("https://www.curseforge.com/api/v1/mods/%d/files/%d/download", projectId, fileId);
+    }
+
     /** プロファイル設定 */
     @JsonProperty("Profile")
     public Profile profile = null;
@@ -199,7 +229,13 @@ public class Config {
     /** 各Mod(CurseForge)のダウンロード設定 */
     @JsonProperty("CurseForgeMods")
     public CurseForgeMod[] curseForgeMods = null;
+    /** 他Modのダウンロード設定 */
+    @JsonProperty("OtherMods")
+    public Mod[] otherMods = null;
+    /** 各リソース(CurseForge)のダウンロード設定 */
+    @JsonProperty("CurseForgeResources")
+    public CurseForgeResource[] curseForgeResources = null;
     /** 他リソースのダウンロード設定 */
-    @JsonProperty("Resources")
-    public Resource[] resources = null;
+    @JsonProperty("OtherResources")
+    public Resource[] otherResources = null;
 }

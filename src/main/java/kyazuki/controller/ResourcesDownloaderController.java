@@ -1,6 +1,9 @@
 package kyazuki.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,7 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import kyazuki.App;
 import kyazuki.dataclass.Config;
-import kyazuki.dataclass.Config.Resource;
+import kyazuki.dataclass.Config.DownloadFile;
 
 public class ResourcesDownloaderController {
     @FXML
@@ -31,23 +34,28 @@ public class ResourcesDownloaderController {
                     protected Void call() throws Exception {
                         Logger logger = App.getLogger();
                         Config config = App.getConfig();
-                        if (config.resources != null) {
-                            // リソース群をダウンロードする
-                            logger.info("Start downloading resource...");
-                            for (int i = 0; i < config.resources.length; i++) {
-                                Resource resource = config.resources[i];
-                                updateMessage(resource.name);
-                                try {
-                                    if (resource.download()) {
-                                        logger.info("\tDownloaded: " + resource.name);
-                                    } else {
-                                        logger.info("\tSkipping download: " + resource.name);
-                                    }
-                                    updateProgress(i + 1, config.resources.length);
-                                } catch (IOException e) {
-                                    logger.log(Level.SEVERE, "Failed to download resource: " + resource.name, e);
-                                    throw e;
+                        // リソース群をダウンロードする
+                        logger.info("Start downloading resources...");
+                        List<DownloadFile> resources = new ArrayList<>();
+                        if (config.curseForgeResources != null) {
+                            Collections.addAll(resources, config.curseForgeResources);
+                        }
+                        if (config.otherResources != null) {
+                            Collections.addAll(resources, config.otherResources);
+                        }
+                        for (int i = 0; i < resources.size(); i++) {
+                            DownloadFile resource = resources.get(i);
+                            updateMessage(resource.name);
+                            try {
+                                if (resource.download()) {
+                                    logger.info("\tDownloaded: " + resource.name);
+                                } else {
+                                    logger.info("\tSkipping download: " + resource.name);
                                 }
+                                updateProgress(i + 1, resources.size());
+                            } catch (IOException e) {
+                                logger.log(Level.SEVERE, "Failed to download resource: " + resource.name, e);
+                                throw e;
                             }
                         }
                         return null;

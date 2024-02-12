@@ -138,7 +138,7 @@ public class App extends Application {
 
     public static void main(String[] args) {
         initializeLogger();
-        logger.info("Start Application. Version: 1.1.2");
+        logger.info("Start Application. Version: 2.0.0");
         launch();
     }
 

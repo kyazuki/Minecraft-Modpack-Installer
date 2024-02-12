@@ -9,13 +9,22 @@ ModLoader:
   autoOpen: true
 CurseForgeMods:
 - name: Create
-  modId: 328085
+  projectId: 328085
   fileId: 4835191
 - name: Just Enough Items
-  modId: 238222
+  projectId: 238222
   fileId: 5074448
-Resources:
+OtherMods:
 - name: Coniditional Tips
   url: https://github.com/kyazuki/ConditionalTips/releases/download/v1.0.0/conditional_tips-1.0.0.jar
-  directory: mods
   filename: conditional_tips-1.0.0.jar # optional
+CurseForgeResources:
+- name: BSL Shaders
+  projectId: 322506
+  fileId: 5077991
+  directory: shaderpacks
+OtherResources:
+- name: CraftTweaker Script
+  url: https://raw.githubusercontent.com/CraftTweaker/CraftTweaker/1.19/Common/src/main/resources/data/crafttweaker/scripts/crafttweaker_hello_world.zs
+  directory: scripts
+  filename: crafttweaker_hello_world.zs # optional

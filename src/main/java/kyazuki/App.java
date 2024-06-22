@@ -33,6 +33,8 @@ public class App extends Application {
     private static Stage stage = null;
     /** シーン */
     private static Scene scene = null;
+    /** 終了コード */
+    private static int exitCode = 0;
 
     /**
      * JavaFX Appのエントリーポイント
@@ -90,6 +92,7 @@ public class App extends Application {
         alert.setOnCloseRequest(new EventHandler<DialogEvent>() {
             @Override
             public void handle(DialogEvent event) {
+                exitCode = 1;
                 Platform.exit();
             }
         });
@@ -146,6 +149,7 @@ public class App extends Application {
             logger.log(Level.SEVERE, "Unknown error occured.", e);
             throw e;
         }
+        System.exit(exitCode);
     }
 
 }

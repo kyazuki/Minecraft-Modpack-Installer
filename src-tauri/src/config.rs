@@ -114,6 +114,8 @@ pub struct ResourceEntry {
     pub source: SourceType,
     pub hash: String,
     pub target_dir: String,
+    #[serde(default)]
+    pub decompress: bool,
     pub side: SideType,
 }
 

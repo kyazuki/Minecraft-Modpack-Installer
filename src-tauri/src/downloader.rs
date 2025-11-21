@@ -137,23 +137,3 @@ pub struct DownloadOutcome {
     pub path: PathBuf,
     pub hash: String,
 }
-
-pub fn move_file(source: &Path, destination: &Path) -> Result<()> {
-    if let Some(parent) = destination.parent() {
-        fs::create_dir_all(parent).with_context(|| {
-            format!(
-                "Failed to create destination directory: {}",
-                parent.display()
-            )
-        })?;
-    }
-    if destination.exists() {
-        log::warn!(
-            "Destination file ({}) already exists and will be overwritten.",
-            destination.display()
-        );
-    }
-    fs::rename(source, destination)?;
-
-    Ok(())
-}

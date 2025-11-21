@@ -200,6 +200,11 @@
                         "type": "string",
                         "description": "Target directory to install the resource (e.g., resourcepacks, shaderpacks)"
                     },
+                    "decompress": {
+                        "type": "boolean",
+                        "description": "Whether to decompress the resource if it's an archive",
+                        "default": true
+                    },
                     "side": {
                         "type": "string",
                         "enum": [

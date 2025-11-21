@@ -173,6 +173,7 @@ pub struct ResourceState {
     pub source: SourceType,
     pub hash: String,
     pub target_dir: String,
+    pub decompress: bool,
 }
 
 impl ResourceState {

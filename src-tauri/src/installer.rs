@@ -1,6 +1,7 @@
 use std::{
     cmp::Ordering,
-    env, fs,
+    env,
+    fs::{self, File},
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
@@ -8,8 +9,9 @@ use std::{
 use anyhow::{anyhow, bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
+use zip::ZipArchive;
 
-use crate::downloader::{move_file, DownloadManager, DownloadProgress};
+use crate::downloader::{DownloadManager, DownloadProgress};
 use crate::launcher::{LauncherProfile, LauncherProfiles};
 use crate::state::{InstallerState, ModLoaderState, ModState, ResourceState};
 use crate::{
@@ -87,6 +89,7 @@ impl Installer {
                 &loader_config.name,
                 &loader_config.hash,
                 &self.install_dir,
+                false,
                 completed_steps,
                 total_steps,
             )?;
@@ -125,6 +128,7 @@ impl Installer {
                     &mod_entry.name,
                     &mod_entry.hash,
                     &mods_dir,
+                    false,
                     completed_steps,
                     total_steps,
                 )?;
@@ -167,6 +171,7 @@ impl Installer {
                     &resource_entry.name,
                     &resource_entry.hash,
                     &target_dir,
+                    resource_entry.decompress,
                     completed_steps,
                     total_steps,
                 )?;
@@ -175,6 +180,7 @@ impl Installer {
                     source: resource_entry.source.clone(),
                     hash: resource_entry.hash.clone(),
                     target_dir: resource_entry.target_dir.clone(),
+                    decompress: resource_entry.decompress,
                 });
                 state.save(&self.state_path)?;
             }
@@ -231,10 +237,11 @@ impl Installer {
         name: &str,
         expected_hash: &str,
         final_dir: &Path,
+        is_decompress: bool,
         completed_steps: u32,
         total_steps: u32,
     ) -> Result<String> {
-        log::info!("Downloading {name} from {url}...");
+        log::info!("Downloading {name} from {url} ...");
         self.emit_change_detail(name);
         let outcome = self.download_manager.download_to_dir(
             url,
@@ -257,11 +264,24 @@ impl Installer {
             .path
             .file_name()
             .ok_or_else(|| anyhow::anyhow!("Could not extract file name from downloaded file"))?;
-        let final_path = final_dir.join(&file_name);
-        verify_hash(expected_hash, &outcome.hash, &final_path)?;
-        move_file(&outcome.path, &final_path)?;
+        verify_hash(expected_hash, &outcome.hash, &outcome.path)?;
+        if !is_decompress {
+            let final_path = final_dir.join(&file_name);
+            move_file(&outcome.path, &final_path)?;
+            log::info!("Downloaded {name}.");
+        } else {
+            log::info!("Extracting {name} to {} ...", final_dir.display());
+            extract_zip(&outcome.path, final_dir)?;
+            if let Err(e) = fs::remove_file(&outcome.path) {
+                log::warn!(
+                    "Failed to remove temporary file {}: {e:?}",
+                    outcome.path.display()
+                );
+            }
+            log::info!("Extracted {name}.");
+        }
+
         self.emit_progress((completed_steps + 1) as f32 / total_steps as f32);
-        log::info!("Downloaded {name}.");
 
         Ok(file_name.to_string_lossy().to_string())
     }
@@ -578,4 +598,31 @@ fn emit_event(app: &AppHandle, payload: InstallerEvent) {
     if let Err(e) = app.emit("installer://event", &payload) {
         log::warn!("Failed to emit installer event. payload: {payload:?}, error: {e:?}");
     }
+}
+
+fn move_file(source: &Path, destination: &Path) -> Result<()> {
+    if let Some(parent) = destination.parent() {
+        fs::create_dir_all(parent).with_context(|| {
+            format!(
+                "Failed to create destination directory: {}",
+                parent.display()
+            )
+        })?;
+    }
+    if destination.exists() {
+        log::warn!(
+            "Destination file ({}) already exists and will be overwritten.",
+            destination.display()
+        );
+    }
+    fs::rename(source, destination)?;
+
+    Ok(())
+}
+
+fn extract_zip(zip_path: &Path, target_dir: &Path) -> Result<()> {
+    let file = File::open(zip_path)?;
+    ZipArchive::new(file)?.extract(target_dir)?;
+
+    Ok(())
 }

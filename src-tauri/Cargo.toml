@@ -34,6 +34,7 @@ tauri-plugin-opener = "2"
 tauri-plugin-process = "2"
 url = "2"
 uuid = { version = "1", features = ["v4"] }
+zip = "6.0.0"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winbase"] }

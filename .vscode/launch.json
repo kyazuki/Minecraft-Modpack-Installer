@@ -2,12 +2,38 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "java",
-            "name": "Launch Installer",
+            "type": "lldb",
             "request": "launch",
-            "mainClass": "kyazuki/kyazuki.Main",
-            "projectName": "minecraft-modpack-installer",
-            "cwd": "${workspaceFolder}/sample"
+            "name": "Launch Installer",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--manifest-path=./src-tauri/Cargo.toml",
+                    "--no-default-features"
+                ]
+            },
+            "preLaunchTask": "ui:dev",
+            "cwd": "${workspaceFolder}/sample",
+            "env": {
+                "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--remote-debugging-port=1422"
+            }
+        },
+        {
+            "name": "Attach to WebView",
+            "port": 1422,
+            "request": "attach",
+            "timeout": 300000,
+            "type": "chrome",
+            "webRoot": "${workspaceFolder}"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Installer",
+            "configurations": [
+                "Launch Installer",
+                "Attach to WebView"
+            ]
         }
     ]
 }

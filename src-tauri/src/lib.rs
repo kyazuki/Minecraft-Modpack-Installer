@@ -137,8 +137,8 @@ pub fn run() {
         ])
         .setup(|app| {
             app.manage(AppState {
-                cwd: cwd,
-                log_dir: log_dir,
+                cwd,
+                log_dir,
                 is_running: false.into(),
             });
             log::info!("{}", "=".repeat(80));

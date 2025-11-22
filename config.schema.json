@@ -1,0 +1,252 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Minecraft Modpack Config",
+    "description": "Configuration file for Minecraft Modpack Installer",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "profile",
+        "modLoader"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "type": "integer",
+            "description": "Schema version of this config file",
+            "minimum": 1
+        },
+        "profile": {
+            "type": "object",
+            "description": "Modpack profile information",
+            "required": [
+                "name",
+                "icon",
+                "version"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the modpack"
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Icon for the Minecraft launcher profile"
+                },
+                "version": {
+                    "type": "string",
+                    "description": "Minecraft version with mod loader version (e.g., '1.20.1-forge-47.2.20')"
+                },
+                "jvmArgs": {
+                    "type": "string",
+                    "description": "JVM arguments for the Minecraft launcher (e.g., '-Xms4G -Xmx8G')"
+                }
+            }
+        },
+        "modLoader": {
+            "type": "object",
+            "description": "Mod loader installer configuration",
+            "required": [
+                "name",
+                "url",
+                "hash"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the mod loader (e.g., Minecraft Forge, Fabric)"
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Download URL for the mod loader installer"
+                },
+                "hash": {
+                    "type": "string",
+                    "description": "SHA-1 hash of the mod loader installer file"
+                },
+                "autoOpen": {
+                    "type": "boolean",
+                    "description": "Whether to automatically open the mod loader installer after download",
+                    "default": true
+                }
+            }
+        },
+        "mods": {
+            "type": "array",
+            "description": "List of mods to install",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "type",
+                    "hash",
+                    "side"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the mod"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "curseforge",
+                            "direct"
+                        ],
+                        "description": "Source type of the mod"
+                    },
+                    "projectId": {
+                        "type": "integer",
+                        "description": "CurseForge project ID (required if type is 'curseforge')"
+                    },
+                    "fileId": {
+                        "type": "integer",
+                        "description": "CurseForge file ID (required if type is 'curseforge')"
+                    },
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Direct download URL (required if type is 'direct')"
+                    },
+                    "hash": {
+                        "type": "string",
+                        "description": "SHA-1 hash of the mod file"
+                    },
+                    "side": {
+                        "type": "string",
+                        "enum": [
+                            "both",
+                            "client",
+                            "server"
+                        ],
+                        "description": "Which side this mod should be installed on"
+                    }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "curseforge"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "projectId",
+                                "fileId"
+                            ]
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "direct"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "url"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "resources": {
+            "type": "array",
+            "description": "List of resource files to install (shaders, scripts, etc.)",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "type",
+                    "hash",
+                    "targetDir",
+                    "side"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the resource"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "curseforge",
+                            "direct"
+                        ],
+                        "description": "Source type of the resource"
+                    },
+                    "projectId": {
+                        "type": "integer",
+                        "description": "CurseForge project ID (required if type is 'curseforge')"
+                    },
+                    "fileId": {
+                        "type": "integer",
+                        "description": "CurseForge file ID (required if type is 'curseforge')"
+                    },
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Direct download URL (required if type is 'direct')"
+                    },
+                    "hash": {
+                        "type": "string",
+                        "description": "SHA-1 hash of the resource file"
+                    },
+                    "targetDir": {
+                        "type": "string",
+                        "description": "Target directory to install the resource (e.g., resourcepacks, shaderpacks)"
+                    },
+                    "decompress": {
+                        "type": "boolean",
+                        "description": "Whether to decompress the resource if it's an archive",
+                        "default": true
+                    },
+                    "side": {
+                        "type": "string",
+                        "enum": [
+                            "both",
+                            "client",
+                            "server"
+                        ],
+                        "description": "Which side this resource should be installed on"
+                    }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "curseforge"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "projectId",
+                                "fileId"
+                            ]
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "direct"
+                                }
+                            }
+                        },
+                        "then": {
+                            "required": [
+                                "url"
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

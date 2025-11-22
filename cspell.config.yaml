@@ -1,0 +1,17 @@
+version: "0.2"
+ignorePaths: []
+dictionaryDefinitions: []
+dictionaries: []
+words:
+  - chrono
+  - curseforge
+  - javaw
+  - kyazuki
+  - localappdata
+  - modpack
+  - reqwest
+  - serde
+  - tauri
+  - unlisten
+ignoreWords: []
+import: []

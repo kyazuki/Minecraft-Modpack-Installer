@@ -1,30 +1,44 @@
-Profile:
+# yaml-language-server: $schema=../config.schema.json
+schemaVersion: 1
+profile:
   name: Example Modpack
   icon: Furnace
-  versionId: 1.20.1-forge-47.2.20
-  javaArgs: -Xms4G -Xmx8G # optional
-ModLoader:
+  version: 1.20.1-forge-47.2.20
+  jvmArgs: -Xms4G -Xmx8G
+modLoader:
   name: Minecraft Forge
   url: https://maven.minecraftforge.net/net/minecraftforge/forge/1.20.1-47.2.20/forge-1.20.1-47.2.20-installer.jar
+  hash: 4266b58662d26244956c1becaefeb2963fcbde55
   autoOpen: true
-CurseForgeMods:
-- name: Create
-  projectId: 328085
-  fileId: 4835191
-- name: Just Enough Items
-  projectId: 238222
-  fileId: 5074448
-OtherMods:
-- name: Coniditional Tips
-  url: https://github.com/kyazuki/ConditionalTips/releases/download/v1.0.0/conditional_tips-1.0.0.jar
-  filename: conditional_tips-1.0.0.jar # optional
-CurseForgeResources:
-- name: BSL Shaders
-  projectId: 322506
-  fileId: 5077991
-  directory: shaderpacks
-OtherResources:
-- name: CraftTweaker Script
-  url: https://raw.githubusercontent.com/CraftTweaker/CraftTweaker/1.19/Common/src/main/resources/data/crafttweaker/scripts/crafttweaker_hello_world.zs
-  directory: scripts
-  filename: crafttweaker_hello_world.zs # optional
+mods:
+  - name: Create
+    type: curseforge
+    projectId: 328085
+    fileId: 4835191
+    hash: "3fee3c26ebbfdfd59e1371ab73ba1f61b44ef6d0"
+    side: both
+  - name: Just Enough Items
+    type: curseforge
+    projectId: 238222
+    fileId: 5074448
+    hash: "73c4aca184386b01bec8d0e1ba8d8cbec933e444"
+    side: both
+  - name: Conditional Tips
+    type: direct
+    url: https://github.com/kyazuki/ConditionalTips/releases/download/v1.0.2/conditional_tips-1.0.2.jar
+    hash: "4a47f1cb8f584babb29b8266d05183fafac2a63a"
+    side: both
+resources:
+  - name: BSL Shaders
+    type: curseforge
+    projectId: 322506
+    fileId: 5077991
+    hash: "5c10ed196eb5bb5b2b36685803775b2ae72eb378"
+    targetDir: shaderpacks
+    side: client
+  - name: CraftTweaker Script
+    type: direct
+    url: https://raw.githubusercontent.com/CraftTweaker/CraftTweaker/1.19/Common/src/main/resources/data/crafttweaker/scripts/crafttweaker_hello_world.zs
+    hash: "a61ac9cb002cc915a88b057c794f5106fc99f1bd"
+    targetDir: scripts
+    side: both

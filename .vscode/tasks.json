@@ -1,0 +1,24 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "ui:dev",
+            "type": "shell",
+            "isBackground": true,
+            "command": "pnpm",
+            "args": [
+                "dev"
+            ]
+        },
+        {
+            "label": "generate icons",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "tauri",
+                "icon",
+                "${workspaceFolder}/public/app-icon.svg"
+            ]
+        }
+    ]
+}

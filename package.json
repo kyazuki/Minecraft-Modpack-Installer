@@ -1,0 +1,35 @@
+{
+  "name": "minecraft-modpack-installer",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.5",
+    "@mui/material": "^7.3.5",
+    "@tauri-apps/api": "^2.9.0",
+    "@tauri-apps/plugin-log": "~2.7.1",
+    "@tauri-apps/plugin-opener": "^2.5.2",
+    "@tauri-apps/plugin-process": "~2.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.9.4",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "~5.6.3",
+    "vite": "^6.4.1"
+  },
+  "volta": {
+    "node": "22.20.0"
+  }
+}

@@ -134,6 +134,11 @@ export default function InstallerScreen(props: InstallerScreenProps) {
     };
   }, [props.mode]);
 
+  const handleClose = () => {
+    setErrorMessage(null);
+    props.onDismissError();
+  };
+
   return (
     <Container
       maxWidth="sm"
@@ -176,14 +181,14 @@ export default function InstallerScreen(props: InstallerScreenProps) {
       <Dialog
         open={errorMessage != null}
         aria-describedby="description"
-        onClose={props.onDismissError}
+        onClose={handleClose}
         sx={{ whiteSpace: "pre-line" }}
       >
         <DialogContent>
           <DialogContentText id="description">{errorMessage}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setErrorMessage(null)} autoFocus>
+          <Button onClick={handleClose} autoFocus>
             {props.translation.close}
           </Button>
         </DialogActions>

@@ -6,12 +6,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::{ModEntry, ModLoader, ResourceEntry, SourceType};
 
-const INSTALLER_VERSION: &str = "3.0.0";
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InstallerState {
-    installer_version: String,
+    installer_version: Version,
     #[serde(default)]
     mod_loader: Option<ModLoaderState>,
     #[serde(default)]
@@ -26,9 +24,9 @@ pub struct InstallerState {
 }
 
 impl InstallerState {
-    fn new() -> Self {
+    fn new(version: &Version) -> Self {
         Self {
-            installer_version: INSTALLER_VERSION.to_string(),
+            installer_version: version.clone(),
             mod_loader: None,
             mods: Vec::new(),
             resources: Vec::new(),
@@ -111,9 +109,8 @@ impl InstallerState {
             state.resource_index.insert(key, i);
         }
         // Migration
-        let state_version = Version::parse(&state.installer_version)?;
-        if state_version != *version {
-            state.installer_version = version.to_string();
+        if state.installer_version < *version {
+            state.installer_version = version.clone();
         }
 
         Ok(state)
@@ -123,7 +120,7 @@ impl InstallerState {
         if path.exists() {
             Self::load(path, version)
         } else {
-            Ok(Self::new())
+            Ok(Self::new(version))
         }
     }
 

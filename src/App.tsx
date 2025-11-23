@@ -1,8 +1,6 @@
 import {
-  Backdrop,
   Box,
   Button,
-  CircularProgress,
   CssBaseline,
   Dialog,
   DialogActions,
@@ -12,7 +10,7 @@ import {
 
 import { invoke } from "@tauri-apps/api/core";
 import { exit } from "@tauri-apps/plugin-process";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import TitleBar from "./components/TitleBar";
 import InstallerScreen, {
@@ -23,39 +21,18 @@ import { Language, translations } from "./utils/localizer";
 
 export type Screen = "title" | "installer";
 
-type TitleStatus = {
-  isExistsConfig: boolean;
-};
-
 type ModeResult = {
   isAccept: boolean;
   error?: string;
 };
 
 export default function App() {
-  const [initializedStatus, setInitialized] = useState<TitleStatus | null>(
-    null
-  );
   const [language, setLanguage] = useState<Language>("ja");
   const [screen, setScreen] = useState<Screen>("title");
   const [installerMode, setInstallerMode] = useState<InstallerMode | null>(
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const isInitialized = useRef(false);
-
-  useEffect(() => {
-    if (isInitialized.current) {
-      return;
-    }
-    isInitialized.current = true;
-    const initialize = async () => {
-      const status = await invoke<TitleStatus>("initialize_title");
-      setInitialized(status);
-    };
-    initialize();
-  }, []);
 
   const translation = translations[language];
   const titleLabel = screen === "title" ? "" : translation.installerTitle;
@@ -124,12 +101,6 @@ export default function App() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Backdrop
-        sx={(theme) => ({ zIndex: theme.zIndex.drawer + 1 })}
-        open={!initializedStatus}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
     </>
   );
 }

@@ -22,7 +22,7 @@ use crate::{
 const STATE_FILE_NAME: &str = "installer-state.json";
 const TEMP_DIR_NAME: &str = ".temp";
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum InstallerMode {
     Install,
@@ -50,8 +50,26 @@ impl Installer {
         })
     }
 
-    pub fn can_install() -> bool {
-        return PathBuf::from("config.yaml").exists();
+    pub fn can_install(cwd: &Path) -> Result<()> {
+        if !cwd.join("config.yaml").exists() {
+            bail!("Config file is not found.");
+        }
+        let state_path = cwd.join(APP_FOLDER_NAME).join(STATE_FILE_NAME);
+        if !state_path.exists() {
+            return Ok(());
+        }
+        let state = InstallerState::load(&state_path)?;
+        Self::can_install_state(&state)
+    }
+
+    fn can_install_state(state: &InstallerState) -> Result<()> {
+        match state.get_process_mode() {
+            None => bail!("Already installed."),
+            Some(mode) if mode != InstallerMode::Install => {
+                bail!("Another mode ({:?}) is already in progress.", mode)
+            }
+            Some(_) => Ok(()),
+        }
     }
 
     pub fn run(mut self, mode: InstallerMode) -> Result<()> {
@@ -64,8 +82,17 @@ impl Installer {
     fn run_install(&mut self) -> Result<()> {
         log::info!("Starting installation...");
         self.prepare_temp_dir()?;
-        let mut state =
-            InstallerState::load_or_new(&self.state_path, &self.app.package_info().version)?;
+        let installer_version = self.app.package_info().version.clone();
+        let mut state = if !self.state_path.exists() {
+            InstallerState::new(&installer_version, &self.config.pack_version)
+        } else {
+            let s = InstallerState::load(&self.state_path)?;
+            Self::can_install_state(&s)?;
+            log::info!("Resuming previous installation process...");
+            s
+        };
+        state.set_process_mode(InstallerMode::Install);
+        state.save(&self.state_path)?;
         let total_steps = self.total_download_steps();
         let mut completed_steps = 0u32;
         // Download Mod loader
@@ -203,6 +230,8 @@ impl Installer {
                 self.emit_add_alert(AlertLevel::Warning, "alertOnFailedLaunchModLoader");
             }
         }
+        state.set_installer_version(&installer_version);
+        state.finalize(&self.state_path)?;
         log::info!("Installation completed.");
 
         Ok(())

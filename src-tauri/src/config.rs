@@ -4,14 +4,16 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use semver::Version;
 use serde::{Deserialize, Serialize};
 
-pub const LATEST_SCHEMA_VERSION: u32 = 1;
+pub const LATEST_SCHEMA_VERSION: u32 = 2;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModPackConfig {
     pub schema_version: u32,
+    pub pack_version: Version,
     pub profile: Profile,
     pub mod_loader: ModLoader,
     #[serde(default)]
@@ -38,7 +40,6 @@ impl ModPackConfig {
                 LATEST_SCHEMA_VERSION
             );
         }
-
         self.profile.validate()?;
         self.mod_loader.validate()?;
         for entry in self.mods.iter_mut() {

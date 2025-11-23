@@ -23,15 +23,16 @@ pub struct AppState {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TitleStatus {
-    pub is_exists_config: bool,
+    pub can_install: bool,
 }
 
 #[tauri::command]
-fn initialize_title() -> TitleStatus {
+fn initialize_title(state: tauri::State<AppState>) -> TitleStatus {
     log::info!("Called initialize_title.");
-    let config_path = PathBuf::from("config.yaml");
     TitleStatus {
-        is_exists_config: config_path.exists(),
+        can_install: Installer::can_install(&state.cwd)
+            .inspect_err(|e| log::warn!("Disabled install mode: {:?}", e))
+            .is_ok(),
     }
 }
 
@@ -43,23 +44,17 @@ pub struct ModeResult {
 }
 
 #[tauri::command]
-fn select_mode(mode: InstallerMode) -> ModeResult {
+fn select_mode(state: tauri::State<AppState>, mode: InstallerMode) -> ModeResult {
     log::info!("Selected mode: {mode:?}");
-    let error = match mode {
-        InstallerMode::Install => {
-            if Installer::can_install() {
-                None
-            } else {
-                Some("Config file is missing.".to_string())
-            }
-        }
+    let result = match mode {
+        InstallerMode::Install => Installer::can_install(&state.cwd),
     };
-    if let Some(ref err) = error {
-        log::error!("Failed to change mode: {err:?}");
+    if let Err(ref err) = result {
+        log::error!("Failed to start {mode:?}: {err:?}");
     }
     ModeResult {
-        is_accept: error.is_none(),
-        error,
+        is_accept: result.is_ok(),
+        error: result.err().map(|e| e.to_string()),
     }
 }
 

@@ -5,17 +5,22 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 
 use crate::config::{ModEntry, ModLoader, ResourceEntry, SourceType};
+use crate::installer::InstallerMode;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InstallerState {
     installer_version: Version,
+    #[serde(default = "InstallerState::migrate_pack_version")]
+    pack_version: Version,
     #[serde(default)]
     mod_loader: Option<ModLoaderState>,
     #[serde(default)]
     mods: Vec<ModState>,
     #[serde(default)]
     resources: Vec<ResourceState>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    process_mode: Option<InstallerMode>,
 
     #[serde(skip)]
     mod_index: HashMap<String, usize>,
@@ -24,15 +29,29 @@ pub struct InstallerState {
 }
 
 impl InstallerState {
-    fn new(version: &Version) -> Self {
+    pub fn new(installer_version: &Version, pack_version: &Version) -> Self {
         Self {
-            installer_version: version.clone(),
+            installer_version: installer_version.clone(),
+            pack_version: pack_version.clone(),
             mod_loader: None,
             mods: Vec::new(),
             resources: Vec::new(),
+            process_mode: None,
             mod_index: HashMap::new(),
             resource_index: HashMap::new(),
         }
+    }
+
+    pub fn set_installer_version(&mut self, version: &Version) {
+        self.installer_version = version.clone();
+    }
+
+    pub fn get_process_mode(&self) -> Option<InstallerMode> {
+        self.process_mode
+    }
+
+    pub fn set_process_mode(&mut self, mode: InstallerMode) {
+        self.process_mode = Some(mode);
     }
 
     fn mod_key(source: &SourceType) -> String {
@@ -90,7 +109,7 @@ impl InstallerState {
         self.resource_index.insert(key, index);
     }
 
-    pub fn load(path: &Path, version: &Version) -> Result<Self> {
+    pub fn load(path: &Path) -> Result<Self> {
         let raw = fs::read_to_string(path)
             .with_context(|| format!("Failed to read installer state at {}", path.display()))?;
         let mut state: InstallerState =
@@ -108,20 +127,8 @@ impl InstallerState {
             let key = Self::resource_key(&resource_state.source, &resource_state.target_dir);
             state.resource_index.insert(key, i);
         }
-        // Migration
-        if state.installer_version < *version {
-            state.installer_version = version.clone();
-        }
 
         Ok(state)
-    }
-
-    pub fn load_or_new(path: &Path, version: &Version) -> Result<Self> {
-        if path.exists() {
-            Self::load(path, version)
-        } else {
-            Ok(Self::new(version))
-        }
     }
 
     pub fn save(&self, path: &Path) -> Result<()> {
@@ -130,6 +137,17 @@ impl InstallerState {
         fs::write(path, json)
             .with_context(|| format!("Failed to write installer state to {}", path.display()))?;
         Ok(())
+    }
+
+    pub fn finalize(&mut self, path: &Path) -> Result<()> {
+        self.process_mode = None;
+        self.save(path)?;
+        Ok(())
+    }
+
+    fn migrate_pack_version() -> Version {
+        log::warn!("packVersion is missing in installer state, defaulting to '0.0.0'");
+        Version::new(0, 0, 0)
     }
 }
 

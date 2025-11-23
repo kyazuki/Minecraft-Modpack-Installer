@@ -46,6 +46,14 @@ impl InstallerState {
         self.installer_version = version.clone();
     }
 
+    pub fn get_pack_version(&self) -> &Version {
+        &self.pack_version
+    }
+
+    pub fn set_pack_version(&mut self, version: &Version) {
+        self.pack_version = version.clone();
+    }
+
     pub fn get_process_mode(&self) -> Option<InstallerMode> {
         self.process_mode
     }
@@ -83,6 +91,14 @@ impl InstallerState {
         self.mod_loader = Some(loader);
     }
 
+    pub fn get_mod_count(&self) -> usize {
+        self.mods.len()
+    }
+
+    pub fn get_all_mods(&self) -> &Vec<ModState> {
+        &self.mods
+    }
+
     pub fn get_mod(&self, mod_entry: &ModEntry) -> Option<&ModState> {
         let key = Self::mod_key(&mod_entry.source);
         self.mod_index.get(&key).map(|&index| &self.mods[index])
@@ -93,6 +109,23 @@ impl InstallerState {
         let index = self.mods.len();
         self.mods.push(mod_state);
         self.mod_index.insert(key, index);
+    }
+
+    pub fn remove_mod(&mut self, mod_state: &ModState) {
+        let key = Self::mod_key(&mod_state.source);
+        let Some(&index) = self.mod_index.get(&key) else {
+            log::warn!(
+                "Attempted to remove mod that doesn't exist in state: {}",
+                mod_state.file_name
+            );
+            return;
+        };
+        self.mods.remove(index);
+        self.mod_index.remove(&key);
+        for i in index..self.mods.len() {
+            let key = Self::mod_key(&self.mods[i].source);
+            self.mod_index.insert(key, i);
+        }
     }
 
     pub fn get_resource(&self, resource_entry: &ResourceEntry) -> Option<&ResourceState> {
@@ -175,8 +208,8 @@ pub struct ModState {
 }
 
 impl ModState {
-    pub fn equals(&self, config: &ModEntry) -> bool {
-        self.source == config.source && self.hash == config.hash
+    pub fn equals(&self, config: &ModEntry, is_ignore_hash: bool) -> bool {
+        self.source == config.source && (is_ignore_hash || self.hash == config.hash)
     }
 }
 

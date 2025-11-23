@@ -24,6 +24,7 @@ pub struct AppState {
 #[serde(rename_all = "camelCase")]
 pub struct TitleStatus {
     pub can_install: bool,
+    pub can_update: bool,
 }
 
 #[tauri::command]
@@ -32,6 +33,9 @@ fn initialize_title(state: tauri::State<AppState>) -> TitleStatus {
     TitleStatus {
         can_install: Installer::can_install(&state.cwd)
             .inspect_err(|e| log::warn!("Disabled install mode: {:?}", e))
+            .is_ok(),
+        can_update: Installer::can_update(&state.cwd)
+            .inspect_err(|e| log::warn!("Disabled update mode: {:?}", e))
             .is_ok(),
     }
 }
@@ -48,6 +52,7 @@ fn select_mode(state: tauri::State<AppState>, mode: InstallerMode) -> ModeResult
     log::info!("Selected mode: {mode:?}");
     let result = match mode {
         InstallerMode::Install => Installer::can_install(&state.cwd),
+        InstallerMode::Update => Installer::can_update(&state.cwd),
     };
     if let Err(ref err) = result {
         log::error!("Failed to start {mode:?}: {err:?}");
@@ -83,7 +88,7 @@ async fn run_installer(app: tauri::AppHandle, mode: InstallerMode) -> Result<(),
     let join_handle = tauri::async_runtime::spawn_blocking({
         let app_for_task = app.clone();
         let cwd = state.cwd.clone();
-        move || Installer::new(app_for_task, cwd.join("config.yaml"), cwd)?.run(mode)
+        move || Installer::new(mode, app_for_task, cwd.join("config.yaml"), cwd)?.run()
     });
     let result = match join_handle.await {
         Err(err) => {

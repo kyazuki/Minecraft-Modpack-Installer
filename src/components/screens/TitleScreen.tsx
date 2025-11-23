@@ -18,6 +18,7 @@ import { InstallerMode, installerModes } from "./InstallerScreen";
 
 export type TitleStatus = {
   canInstall: boolean;
+  canUpdate: boolean;
 };
 
 type TitleScreenProps = {
@@ -85,7 +86,7 @@ export default function TitleScreen(props: TitleScreenProps) {
           <Stack
             direction="row"
             spacing={2}
-            alignItems="stretch"
+            alignItems="center"
             justifyContent="center"
           >
             <Box sx={{ width: buttonWidth }} />
@@ -93,12 +94,18 @@ export default function TitleScreen(props: TitleScreenProps) {
               {installerModes.map((mode) => (
                 <Button
                   key={`title-${mode}`}
-                  disabled={mode == "install" && !initializedStatus.canInstall}
+                  disabled={
+                    mode === "install"
+                      ? !initializedStatus.canInstall
+                      : !initializedStatus.canUpdate
+                  }
                   variant="contained"
                   onClick={() => props.onModeSelect(mode)}
                   sx={{ height: buttonWidth }}
                 >
-                  {props.translation.install}
+                  {mode === "install"
+                    ? props.translation.install
+                    : props.translation.update}
                 </Button>
               ))}
             </Stack>

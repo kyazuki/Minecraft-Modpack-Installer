@@ -8,6 +8,7 @@ use std::{
 use anyhow::{bail, Context, Result};
 use reqwest::blocking::{Client, Response};
 use sha1::{Digest, Sha1};
+use urlencoding;
 
 const DOWNLOAD_TIMEOUT_SECS: u64 = 10;
 
@@ -110,7 +111,7 @@ fn extract_file_name(response: &Response) -> Result<String> {
                 // Remove query parameters if present
                 let file_name = last_segment.split('?').next().unwrap_or(last_segment);
                 if !file_name.is_empty() {
-                    return Ok(file_name.to_string());
+                    return Ok(urlencoding::decode(file_name)?.to_string());
                 }
             }
         }

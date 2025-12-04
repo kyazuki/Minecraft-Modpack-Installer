@@ -16,7 +16,7 @@ use crate::downloader::{DownloadManager, DownloadProgress};
 use crate::launcher::{LauncherProfile, LauncherProfiles};
 use crate::state::{InstallerState, ModLoaderState, ModState, ResourceState};
 use crate::{
-    config::{ModPackConfig, ResourceEntry},
+    config::{ModPackConfig, ResourceEntry, Side},
     APP_FOLDER_NAME,
 };
 
@@ -36,6 +36,7 @@ pub struct Installer {
     download_manager: DownloadManager,
     config: ModPackConfig,
     install_dir: PathBuf,
+    side: Side,
     temp_dir: PathBuf,
     state_path: PathBuf,
 }
@@ -46,7 +47,9 @@ impl Installer {
         app: AppHandle,
         config_path: PathBuf,
         install_dir: PathBuf,
+        side: Side,
     ) -> Result<Self> {
+        assert_ne!(&side, &Side::Both);
         let app_dir = install_dir.join(APP_FOLDER_NAME);
         Ok(Self {
             mode,
@@ -54,6 +57,7 @@ impl Installer {
             download_manager: DownloadManager::new()?,
             config: ModPackConfig::load_from_path(&config_path)?,
             install_dir: install_dir.clone(),
+            side,
             temp_dir: app_dir.join(TEMP_DIR_NAME),
             state_path: app_dir.join(STATE_FILE_NAME),
         })
@@ -277,8 +281,18 @@ impl Installer {
         if mode == InstallerMode::Update {
             steps += state.get_mod_count() as u32;
         }
-        steps += self.config.get_mods().len() as u32;
-        steps += self.config.get_resources().len() as u32;
+        steps += self
+            .config
+            .get_mods()
+            .iter()
+            .filter(|mod_entry| mod_entry.should_install(&self.side))
+            .count() as u32;
+        steps += self
+            .config
+            .get_resources()
+            .iter()
+            .filter(|resource_entry| resource_entry.should_install(&self.side))
+            .count() as u32;
         if mode == InstallerMode::Update {
             steps += Self::get_update_settings_steps(
                 &state.get_pack_version(),
@@ -359,6 +373,9 @@ impl Installer {
     ) -> Result<()> {
         let mods_dir = self.get_mods_dir();
         for mod_entry in self.config.get_mods() {
+            if !mod_entry.should_install(&self.side) {
+                continue;
+            }
             let needs_download = state.get_mod(mod_entry).map_or(true, |downloaded_mod| {
                 if !downloaded_mod.equals(mod_entry, false) {
                     log::warn!(
@@ -405,6 +422,9 @@ impl Installer {
         total_steps: u32,
     ) -> Result<()> {
         for resource_entry in self.config.get_resources() {
+            if !resource_entry.should_install(&self.side) {
+                continue;
+            }
             let needs_download =
                 state
                     .get_resource(resource_entry)

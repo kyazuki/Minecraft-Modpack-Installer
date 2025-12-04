@@ -24,11 +24,17 @@ mods:
     fileId: 5074448
     hash: "73c4aca184386b01bec8d0e1ba8d8cbec933e444"
     side: both
+  - name: Simple Backups
+    type: curseforge
+    projectId: 583228
+    fileId: 7151898
+    hash: "43c4193d7e57cefcb920922c899baa47d9ad032c"
+    side: server
   - name: Conditional Tips
     type: direct
     url: https://github.com/kyazuki/ConditionalTips/releases/download/v1.0.2/conditional_tips-1.0.2.jar
     hash: "4a47f1cb8f584babb29b8266d05183fafac2a63a"
-    side: both
+    side: client
 resources:
   - name: BSL Shaders
     type: curseforge

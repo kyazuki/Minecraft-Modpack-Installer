@@ -132,6 +132,7 @@ export default function InstallerScreen(props: InstallerScreenProps) {
             ? props.translation.phaseFinishInstall
             : props.translation.phaseFinishUpdate
         );
+        setDetail("");
         setIsFinished(true);
       } catch (e: unknown) {
         setErrorMessage(typeof e === "string" ? e : String(e));

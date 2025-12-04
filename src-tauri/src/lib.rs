@@ -6,10 +6,12 @@ mod state;
 
 use std::{env, path::PathBuf, sync::Mutex};
 
-use installer::{Installer, InstallerMode};
 use serde::Serialize;
 use tauri::Manager;
 use tauri_plugin_opener::OpenerExt;
+
+use crate::config::Side;
+use crate::installer::{Installer, InstallerMode};
 
 pub const APP_FOLDER_NAME: &str = "mm-installer";
 const LOG_FOLDER_NAME: &str = "logs";
@@ -88,7 +90,16 @@ async fn run_installer(app: tauri::AppHandle, mode: InstallerMode) -> Result<(),
     let join_handle = tauri::async_runtime::spawn_blocking({
         let app_for_task = app.clone();
         let cwd = state.cwd.clone();
-        move || Installer::new(mode, app_for_task, cwd.join("config.yaml"), cwd)?.run()
+        move || {
+            Installer::new(
+                mode,
+                app_for_task,
+                cwd.join("config.yaml"),
+                cwd,
+                Side::Client,
+            )?
+            .run()
+        }
     });
     let result = match join_handle.await {
         Err(err) => {

@@ -142,12 +142,19 @@ pub struct ModEntry {
     #[serde(flatten)]
     pub source: SourceType,
     pub hash: String,
-    pub side: SideType,
+    pub side: Side,
 }
 
 impl ModEntry {
     fn validate(&self) -> Result<()> {
         Ok(())
+    }
+
+    pub fn should_install(&self, side: &Side) -> bool {
+        match &self.side {
+            Side::Both => true,
+            _ => &self.side == side,
+        }
     }
 }
 
@@ -161,13 +168,20 @@ pub struct ResourceEntry {
     pub target_dir: String,
     #[serde(default)]
     pub decompress: bool,
-    pub side: SideType,
+    pub side: Side,
 }
 
 impl ResourceEntry {
     fn validate(&self) -> Result<()> {
         validate_relative_dir(&self.target_dir, "resources.targetDir")?;
         Ok(())
+    }
+
+    pub fn should_install(&self, side: &Side) -> bool {
+        match &self.side {
+            Side::Both => true,
+            _ => &self.side == side,
+        }
     }
 }
 
@@ -196,9 +210,9 @@ impl SourceType {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum SideType {
+pub enum Side {
     Both,
     Client,
     Server,

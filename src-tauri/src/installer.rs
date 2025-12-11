@@ -110,15 +110,15 @@ impl Installer {
         }
     }
 
-    pub fn run(mut self) -> Result<()> {
+    pub async fn run(mut self) -> Result<()> {
         self.emit_progress(0.);
         match self.mode {
-            InstallerMode::Install => self.run_install(),
-            InstallerMode::Update => self.run_update(),
+            InstallerMode::Install => self.run_install().await,
+            InstallerMode::Update => self.run_update().await,
         }
     }
 
-    fn run_install(&mut self) -> Result<()> {
+    async fn run_install(&mut self) -> Result<()> {
         log::info!("Starting installation...");
         self.prepare_temp_dir()?;
         let installer_version = self.app.package_info().version.clone();
@@ -157,15 +157,17 @@ impl Installer {
                     );
                 }
             } else {
-                let file_name = self.ensure_download(
-                    &loader_config.url,
-                    &loader_config.name,
-                    &loader_config.hash,
-                    &self.install_dir,
-                    false,
-                    completed_steps,
-                    total_steps,
-                )?;
+                let file_name = self
+                    .ensure_download(
+                        &loader_config.url,
+                        &loader_config.name,
+                        &loader_config.hash,
+                        &self.install_dir,
+                        false,
+                        completed_steps,
+                        total_steps,
+                    )
+                    .await?;
                 state.set_mod_loader(ModLoaderState {
                     file_name,
                     url: loader_config.url.clone(),
@@ -177,10 +179,12 @@ impl Installer {
             self.emit_progress(completed_steps as f32 / total_steps as f32);
             // Mods
             self.emit_change_phase(Phase::DownloadMods);
-            self.download_mods(&mut state, &mut completed_steps, total_steps)?;
+            self.download_mods(&mut state, &mut completed_steps, total_steps)
+                .await?;
             // Resources
             self.emit_change_phase(Phase::DownloadResources);
-            self.download_resources(&mut state, &mut completed_steps, total_steps)?;
+            self.download_resources(&mut state, &mut completed_steps, total_steps)
+                .await?;
             debug_assert_eq!(completed_steps, total_steps);
         }
         self.emit_progress(1.);
@@ -205,7 +209,7 @@ impl Installer {
         Ok(())
     }
 
-    fn run_update(&mut self) -> Result<()> {
+    async fn run_update(&mut self) -> Result<()> {
         log::info!("Starting update...");
         self.prepare_temp_dir()?;
         let mut state = Self::can_update_state(&self.config, &self.state_path)?;
@@ -236,10 +240,12 @@ impl Installer {
         }
         // Add mods
         self.emit_change_phase(Phase::DownloadMods);
-        self.download_mods(&mut state, &mut completed_steps, total_steps)?;
+        self.download_mods(&mut state, &mut completed_steps, total_steps)
+            .await?;
         // Add resources
         self.emit_change_phase(Phase::DownloadResources);
-        self.download_resources(&mut state, &mut completed_steps, total_steps)?;
+        self.download_resources(&mut state, &mut completed_steps, total_steps)
+            .await?;
         // Update settings
         self.emit_change_phase(Phase::UpdateSettings);
         self.update_settings(&mut state, &mut completed_steps, total_steps)?;
@@ -302,7 +308,7 @@ impl Installer {
         steps
     }
 
-    fn ensure_download(
+    async fn ensure_download(
         &self,
         url: &str,
         name: &str,
@@ -314,23 +320,26 @@ impl Installer {
     ) -> Result<String> {
         log::info!("Downloading {name} from {url} ...");
         self.emit_change_detail(name);
-        let outcome = self.download_manager.download_to_dir(
-            url,
-            &self.temp_dir,
-            Some(move |progress: DownloadProgress| -> Result<()> {
-                if progress.total_bytes.is_none() {
-                    return Ok(());
-                }
-                let total = progress.total_bytes.unwrap();
-                let fraction = if total != 0 {
-                    progress.received_bytes as f32 / total as f32
-                } else {
-                    0.0
-                };
-                self.emit_progress((completed_steps as f32 + fraction) / total_steps as f32);
-                Ok(())
-            }),
-        )?;
+        let outcome = self
+            .download_manager
+            .download_to_dir(
+                url,
+                &self.temp_dir,
+                Some(move |progress: DownloadProgress| -> Result<()> {
+                    if progress.total_bytes.is_none() {
+                        return Ok(());
+                    }
+                    let total = progress.total_bytes.unwrap();
+                    let fraction = if total != 0 {
+                        progress.received_bytes as f32 / total as f32
+                    } else {
+                        0.0
+                    };
+                    self.emit_progress((completed_steps as f32 + fraction) / total_steps as f32);
+                    Ok(())
+                }),
+            )
+            .await?;
         let file_name = outcome
             .path
             .file_name()
@@ -365,7 +374,7 @@ impl Installer {
         self.install_dir.join(&entry.target_dir)
     }
 
-    fn download_mods(
+    async fn download_mods(
         &self,
         state: &mut InstallerState,
         completed_steps: &mut u32,
@@ -393,15 +402,17 @@ impl Installer {
             });
             if needs_download {
                 let url = mod_entry.source.get_download_url();
-                let file_name = self.ensure_download(
-                    &url,
-                    &mod_entry.name,
-                    &mod_entry.hash,
-                    &mods_dir,
-                    false,
-                    *completed_steps,
-                    total_steps,
-                )?;
+                let file_name = self
+                    .ensure_download(
+                        &url,
+                        &mod_entry.name,
+                        &mod_entry.hash,
+                        &mods_dir,
+                        false,
+                        *completed_steps,
+                        total_steps,
+                    )
+                    .await?;
                 state.add_mod(ModState {
                     file_name,
                     source: mod_entry.source.clone(),
@@ -415,7 +426,7 @@ impl Installer {
         Ok(())
     }
 
-    fn download_resources(
+    async fn download_resources(
         &self,
         state: &mut InstallerState,
         completed_steps: &mut u32,
@@ -446,15 +457,17 @@ impl Installer {
             if needs_download {
                 let url = resource_entry.source.get_download_url();
                 let target_dir = self.get_resource_dir(resource_entry);
-                let file_name = self.ensure_download(
-                    &url,
-                    &resource_entry.name,
-                    &resource_entry.hash,
-                    &target_dir,
-                    resource_entry.decompress,
-                    *completed_steps,
-                    total_steps,
-                )?;
+                let file_name = self
+                    .ensure_download(
+                        &url,
+                        &resource_entry.name,
+                        &resource_entry.hash,
+                        &target_dir,
+                        resource_entry.decompress,
+                        *completed_steps,
+                        total_steps,
+                    )
+                    .await?;
                 state.add_resource(ResourceState {
                     file_name,
                     source: resource_entry.source.clone(),

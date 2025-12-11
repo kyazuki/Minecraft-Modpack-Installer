@@ -87,31 +87,23 @@ async fn run_installer(app: tauri::AppHandle, mode: InstallerMode) -> Result<(),
         }
         *is_running = true;
     }
-    let join_handle = tauri::async_runtime::spawn_blocking({
-        let app_for_task = app.clone();
-        let cwd = state.cwd.clone();
-        move || {
-            Installer::new(
-                mode,
-                app_for_task,
-                cwd.join("config.yaml"),
-                cwd,
-                Side::Client,
-            )?
-            .run()
-        }
+    let result = Installer::new(
+        mode,
+        app.clone(),
+        state.cwd.join("config.yaml"),
+        state.cwd.clone(),
+        Side::Client,
+    )
+    .map_err(|e| {
+        log::error!("Failed to initialize installer: {e:?}");
+        "Failed to start installing.".to_string()
+    })?
+    .run()
+    .await
+    .map_err(|e| {
+        log::error!("Installer execution failed: {e:?}");
+        "Failed to install.".to_string()
     });
-    let result = match join_handle.await {
-        Err(err) => {
-            log::error!("Installer task join error: {err:?}");
-            Err("Failed to start installing.".to_string())
-        }
-        Ok(Err(err)) => {
-            log::error!("Installer execution failed: {err:?}");
-            Err("Failed to install.".to_string())
-        }
-        Ok(Ok(())) => Ok(()),
-    };
     {
         let mut is_running = state.is_running.lock().unwrap();
         *is_running = false;

@@ -23,25 +23,18 @@ impl Modrinth {
                 version.project_id
             ));
         }
-        if version.files.is_empty() {
-            return Err(anyhow!(
-                "No files found for version {} of project {}.",
-                version_id,
-                project_id
-            ));
-        }
-        if version.files.len() > 1 {
-            log::warn!(
-                "Version {} has multiple files, selecting primary or first.",
-                version_id
-            );
-        }
         let file = version
             .files
             .iter()
             .find(|f| f.primary)
             .or_else(|| version.files.first())
-            .ok_or_else(|| anyhow!("No files found for version {}.", version_id))?;
+            .ok_or_else(|| {
+                anyhow!(
+                    "No files found for version {} of project {}.",
+                    version_id,
+                    project_id
+                )
+            })?;
 
         Ok(file.url.to_string())
     }

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../config.schema.json
-schemaVersion: 2
+schemaVersion: 3
 packVersion: "1.0.0"
 profile:
   name: Example Modpack
@@ -13,9 +13,9 @@ modLoader:
   autoOpen: true
 mods:
   - name: Create
-    type: curseforge
-    projectId: 328085
-    fileId: 7178775
+    type: modrinth
+    projectId: LNytGWDc
+    versionId: 88L641Un
     hash: "eee603ac7b083c9cd3a8ded4d4e3ed1a9a836f96"
     side: both
   - name: Curios API (Forge/NeoForge)

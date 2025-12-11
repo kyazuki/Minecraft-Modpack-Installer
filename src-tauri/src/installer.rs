@@ -401,7 +401,7 @@ impl Installer {
                 }
             });
             if needs_download {
-                let url = mod_entry.source.get_download_url();
+                let url = mod_entry.source.get_download_url().await?;
                 let file_name = self
                     .ensure_download(
                         &url,
@@ -455,7 +455,7 @@ impl Installer {
                         }
                     });
             if needs_download {
-                let url = resource_entry.source.get_download_url();
+                let url = resource_entry.source.get_download_url().await?;
                 let target_dir = self.get_resource_dir(resource_entry);
                 let file_name = self
                     .ensure_download(

@@ -8,7 +8,9 @@ use anyhow::{bail, Context, Result};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
-pub const LATEST_SCHEMA_VERSION: u32 = 2;
+use crate::modrinth::Modrinth;
+
+pub const LATEST_SCHEMA_VERSION: u32 = 3;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -92,6 +94,10 @@ impl ModPackConfig {
                 project_id,
                 file_id,
             } => format!("cf:{project_id}:{file_id}"),
+            SourceType::Modrinth {
+                project_id,
+                version_id,
+            } => format!("mr:{project_id}:{version_id}"),
             SourceType::Direct { url } => format!("direct:{url}"),
         }
     }
@@ -192,20 +198,33 @@ impl ResourceEntry {
     rename_all_fields = "camelCase"
 )]
 pub enum SourceType {
-    Curseforge { project_id: u32, file_id: u32 },
-    Direct { url: String },
+    Curseforge {
+        project_id: u32,
+        file_id: u32,
+    },
+    Modrinth {
+        project_id: String,
+        version_id: String,
+    },
+    Direct {
+        url: String,
+    },
 }
 
 impl SourceType {
-    pub fn get_download_url(&self) -> String {
+    pub async fn get_download_url(&self) -> Result<String> {
         match self {
             SourceType::Curseforge {
                 project_id,
                 file_id,
-            } => format!(
+            } => Ok(format!(
                 "https://www.curseforge.com/api/v1/mods/{project_id}/files/{file_id}/download"
-            ),
-            SourceType::Direct { url } => url.clone(),
+            )),
+            SourceType::Modrinth {
+                project_id,
+                version_id,
+            } => Modrinth::get_download_url(project_id, version_id).await,
+            SourceType::Direct { url } => Ok(url.clone()),
         }
     }
 }

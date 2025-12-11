@@ -2,6 +2,7 @@ mod config;
 mod downloader;
 mod installer;
 mod launcher;
+mod modrinth;
 mod state;
 
 use std::{env, path::PathBuf, sync::Mutex};

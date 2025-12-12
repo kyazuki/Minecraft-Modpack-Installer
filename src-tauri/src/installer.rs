@@ -541,14 +541,22 @@ impl Installer {
     }
 
     fn add_launcher_profile(&self) -> Result<()> {
-        if !cfg!(target_os = "windows") {
-            bail!("Adding launcher profile is only supported on Windows.");
-        }
         log::info!("Adding launcher profile...");
-        let appdata = env::var("APPDATA").context("APPDATA environment variable not found")?;
-        let profiles_path = PathBuf::from(appdata)
-            .join(".minecraft")
-            .join("launcher_profiles.json");
+        let profiles_path = if cfg!(target_os = "windows") {
+            let appdata = env::var("APPDATA").context("APPDATA environment variable not found")?;
+            PathBuf::from(appdata)
+                .join(".minecraft")
+                .join("launcher_profiles.json")
+        } else if cfg!(target_os = "macos") {
+            let home = env::var("HOME").context("HOME environment variable not found")?;
+            PathBuf::from(home)
+                .join("Library")
+                .join("Application Support")
+                .join("minecraft")
+                .join("launcher_profiles.json")
+        } else {
+            bail!("Unsupported operating system: {}", env::consts::OS);
+        };
         if !profiles_path.exists() {
             bail!("Launcher profiles file not found. ");
         }
@@ -690,8 +698,8 @@ fn find_java() -> Option<PathBuf> {
         }
     }
     // 2. Check Minecraft Launcher App runtime
+    log::info!("Searching for java from minecraft...");
     if cfg!(target_os = "windows") {
-        log::info!("Searching for java from minecraft...");
         match env::var("LOCALAPPDATA") {
             Ok(local_appdata) => {
                 let runtimes_dir = PathBuf::from(local_appdata)
@@ -706,6 +714,22 @@ fn find_java() -> Option<PathBuf> {
             }
             Err(error) => {
                 log::warn!("LOCALAPPDATA environment variable not found: {error:?}");
+            }
+        }
+    } else if cfg!(target_os = "macos") {
+        match env::var("HOME") {
+            Ok(home) => {
+                let runtimes_dir = PathBuf::from(home)
+                    .join("Library")
+                    .join("Application Support")
+                    .join("minecraft")
+                    .join("runtime");
+                if let Some(java) = search_runtime_dir(&runtimes_dir) {
+                    return Some(java);
+                }
+            }
+            Err(error) => {
+                log::warn!("HOME environment variable not found: {error:?}");
             }
         }
     }

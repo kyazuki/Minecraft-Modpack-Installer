@@ -1,6 +1,7 @@
 use std::{
     cmp::Ordering,
     env,
+    fmt::{self, Display},
     fs::{self, File},
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -28,6 +29,15 @@ const TEMP_DIR_NAME: &str = ".temp";
 pub enum InstallerMode {
     Install,
     Update,
+}
+
+impl Display for InstallerMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            InstallerMode::Install => write!(f, "Install"),
+            InstallerMode::Update => write!(f, "Update"),
+        }
+    }
 }
 
 pub struct Installer {

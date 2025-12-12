@@ -97,13 +97,13 @@ async fn run_installer(app: tauri::AppHandle, mode: InstallerMode) -> Result<(),
     )
     .map_err(|e| {
         log::error!("Failed to initialize installer: {e:?}");
-        "Failed to start installing.".to_string()
+        format!("{e}")
     })?
     .run()
     .await
     .map_err(|e| {
-        log::error!("Installer execution failed: {e:?}");
-        "Failed to install.".to_string()
+        log::error!("Failed to {}: {e:?}", mode.to_string().to_lowercase());
+        format!("{e}")
     });
     {
         let mut is_running = state.is_running.lock().unwrap();

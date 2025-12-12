@@ -1,3 +1,4 @@
+import ErrorIcon from "@mui/icons-material/Error";
 import {
   Alert,
   AlertProps,
@@ -7,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
+  DialogTitle,
   LinearProgress,
   Stack,
   Typography,
@@ -197,10 +199,22 @@ export default function InstallerScreen(props: InstallerScreenProps) {
         onClose={handleClose}
         sx={{ whiteSpace: "pre-line" }}
       >
+        <DialogTitle sx={{ display: "flex", alignItems: "center" }}>
+          <ErrorIcon color="error" sx={{ mr: 1 }} />
+          {props.translation.error}
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText id="description">{errorMessage}</DialogContentText>
+          <DialogContentText id="description">
+            {props.mode == "install"
+              ? props.translation.installFailed
+              : props.translation.updateFailed}
+            {errorMessage}
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
+          <Button onClick={() => invoke("open_log_folder")}>
+            {props.translation.openLogFolder}
+          </Button>
           <Button onClick={handleClose} autoFocus>
             {props.translation.close}
           </Button>

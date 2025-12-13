@@ -6,6 +6,31 @@
     "args": ["dev"]
   },
   {
+      "label": "build: debug",
+      "command": "cargo",
+      "args": [
+          "build",
+          "--manifest-path=$ZED_WORKTREE_ROOT/src-tauri/Cargo.toml",
+          "--no-default-features"
+      ]
+  },
+  {
+      "label": "build: release",
+      "command": "pnpm",
+      "args": [
+          "tauri",
+          "build"
+      ]
+  },
+  {
+      "label": "copy binary",
+      "command": "cp",
+      "args": [
+          "$ZED_WORKTREE_ROOT/src-tauri/target/debug/minecraft-modpack-installer.exe",
+          "$ZED_WORKTREE_ROOT/sample/"
+      ]
+  },
+  {
     "label": "generate icons",
     "command": "pnpm",
     "args": ["tauri", "icon", "$ZED_WORKTREE_ROOT/public/app-icon.svg"]

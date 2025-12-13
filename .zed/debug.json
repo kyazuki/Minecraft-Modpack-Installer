@@ -7,16 +7,9 @@
     "label": "Launch Installer",
     "adapter": "CodeLLDB",
     "request": "launch",
-    "program": "$ZED_WORKTREE_ROOT/src-tauri/target/debug/minecraft-modpack-installer.exe",
+    "program": "$ZED_WORKTREE_ROOT/sample/minecraft-modpack-installer.exe",
     "cwd": "$ZED_WORKTREE_ROOT/sample",
-    "build": {
-      "command": "cargo",
-      "args": [
-        "build",
-        "--manifest-path=./src-tauri/Cargo.toml",
-        "--no-default-features"
-      ]
-    },
+    "build": "copy binary",
     "env": {
       "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--remote-debugging-port=1422"
     }

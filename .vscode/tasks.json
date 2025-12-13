@@ -57,7 +57,7 @@
                 "args": [
                     "${workspaceFolder}/src-tauri/target/debug/minecraft-modpack-installer.exe",
                     "${workspaceFolder}/sample/"
-                ],
+                ]
             },
             "problemMatcher": []
         },

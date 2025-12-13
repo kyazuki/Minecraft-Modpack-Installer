@@ -13,16 +13,10 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
 use zip::ZipArchive;
 
+use crate::config::{ModPackConfig, ResourceEntry, Side};
 use crate::downloader::{DownloadManager, DownloadProgress};
 use crate::launcher::{LauncherProfile, LauncherProfiles};
 use crate::state::{InstallerState, ModLoaderState, ModState, ResourceState};
-use crate::{
-    config::{ModPackConfig, ResourceEntry, Side},
-    APP_FOLDER_NAME,
-};
-
-const STATE_FILE_NAME: &str = "installer-state.json";
-const TEMP_DIR_NAME: &str = ".temp";
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -58,9 +52,10 @@ impl Installer {
         config_path: PathBuf,
         install_dir: PathBuf,
         side: Side,
+        app_dir: PathBuf,
+        state_path: PathBuf,
     ) -> Result<Self> {
         assert_ne!(&side, &Side::Both);
-        let app_dir = install_dir.join(APP_FOLDER_NAME);
         Ok(Self {
             mode,
             app,
@@ -68,16 +63,15 @@ impl Installer {
             config: ModPackConfig::load_from_path(&config_path)?,
             install_dir: install_dir.clone(),
             side,
-            temp_dir: app_dir.join(TEMP_DIR_NAME),
-            state_path: app_dir.join(STATE_FILE_NAME),
+            temp_dir: app_dir.join(".temp"),
+            state_path,
         })
     }
 
-    pub fn can_install(cwd: &Path) -> Result<()> {
-        if !cwd.join("config.yaml").exists() {
+    pub fn can_install(config_path: &Path, state_path: &Path) -> Result<()> {
+        if !config_path.exists() {
             bail!("Config file is not found.");
         }
-        let state_path = cwd.join(APP_FOLDER_NAME).join(STATE_FILE_NAME);
         if !state_path.exists() {
             return Ok(());
         }
@@ -94,9 +88,8 @@ impl Installer {
         }
     }
 
-    pub fn can_update(cwd: &Path) -> Result<()> {
-        let config = ModPackConfig::load_from_path(&cwd.join("config.yaml"))?;
-        let state_path = cwd.join(APP_FOLDER_NAME).join(STATE_FILE_NAME);
+    pub fn can_update(config_path: &Path, state_path: &Path) -> Result<()> {
+        let config = ModPackConfig::load_from_path(&config_path)?;
         Self::can_update_state(&config, &state_path).map(|_| ())
     }
 

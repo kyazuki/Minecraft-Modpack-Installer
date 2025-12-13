@@ -251,7 +251,8 @@ impl Installer {
             .await?;
         // Update settings
         self.emit_change_phase(Phase::UpdateSettings);
-        self.update_settings(&mut state, &mut completed_steps, total_steps)?;
+        self.update_settings(&mut state, &mut completed_steps, total_steps)
+            .await?;
         debug_assert_eq!(completed_steps, total_steps);
         self.emit_progress(1.);
         state.set_installer_version(&self.app.package_info().version);
@@ -486,7 +487,7 @@ impl Installer {
         Ok(())
     }
 
-    fn update_settings(
+    async fn update_settings(
         &self,
         state: &mut InstallerState,
         completed_steps: &mut u32,
